@@ -1,11 +1,8 @@
 # Firmware
 
-ESP32 firmware for the real-time side of Pip. It covers:
-- wheel speed PID loops
-- encoders
-- the IMU
-- battery and dock-contact sensing
-- bump and cliff sensors
-- the serial protocol to the Raspberry Pi, with a motor watchdog
+Empty for now. This is where the ESP32 code goes once there's hardware to run it on: the wheel PID
+loops, encoders, IMU, battery sensing, bump and cliff sensors, and the serial link to the Pi with its
+200 ms motor watchdog.
 
-See [docs/hardware.md](../docs/hardware.md) for the protocol and wiring plan.
+The protocol is sketched in [docs/hardware.md](../docs/hardware.md), and the reasoning for splitting
+the work this way is in section 3 of the [build notes](../docs/build-notes.md).

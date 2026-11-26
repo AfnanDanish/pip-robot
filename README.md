@@ -2,95 +2,88 @@
 
 [![CI](https://github.com/AfnanDanish/pip-robot/actions/workflows/ci.yml/badge.svg)](https://github.com/AfnanDanish/pip-robot/actions/workflows/ci.yml)
 
-A small home robot with a personality. Pip maps your home with a lidar, wanders around on its own,
-drives itself back to its charging dock when the battery runs low, and shows how it feels through
-two round animated eyes, beeps and a voice. Everything runs locally, with no cloud needed.
+Pip is a small home robot I'm building. It wakes up on its charger, maps the place with a lidar,
+wanders around, and when the battery gets low it drives home and plugs itself back in. It has two
+round screens for eyes and talks mostly in beeps.
 
-**[▶ Watch Pip live in your browser](https://afnandanish.github.io/pip-robot/)**. It maps the apartment,
-explores, wanders and docks itself. Drop boxes in its way or click its map to send it somewhere.
+Right now Pip lives in simulation while I save up for parts. The code here is the real thing,
+though: the same ROS 2 nodes will run on the robot.
 
-![Pip's eyes for every mood](docs/eyes.png)
+**[Watch it run in your browser →](https://afnandanish.github.io/pip-robot/)**
 
-The full software stack runs in Gazebo, and the same ROS 2 nodes run on the real robot.
+Things to try there: drop a box in front of it, click somewhere on its map to send it off, poke it,
+or put it to sleep. The numbered dots are developer commentary, and each one explains a decision.
 
-## What Pip does
+![Pip's eyes, one for each mood](docs/eyes.png)
 
-| | |
-|---|---|
-| **Maps** | Builds a 2D map of an unknown home with `slam_toolbox` while it drives. |
-| **Explores** | Frontier exploration: keeps driving to the edge of the known map until the whole home is mapped. |
-| **Navigates** | Nav2 with a regulated pure-pursuit controller, tuned for a 28 cm robot in doorways. |
-| **Docks itself** | Drives to a staging pose, finds the dock's face in the lidar scan with RANSAC, lines up with a carrot controller, then creeps the last centimetres on odometry. It retries on a miss. |
-| **Manages energy** | Undocks when charged and heads home below 25%. |
-| **Has moods** | A mood engine turns robot events (docked, map finished, close call, stuck) into eyes, beeps and short lines. |
+## Why it's built the way it is
 
-## Architecture
+[docs/build-notes.md](docs/build-notes.md) is the long version: why two computers instead of one,
+why a lidar and not a camera, why wheels and not treads (that one hurt), how docking works, and a
+running list of things that have gone wrong. If you read one file in this repo, read that one.
 
-```mermaid
-flowchart LR
-  subgraph sim[Gazebo Harmonic]
-    world[Apartment + dock] --- robot[Pip: diff drive, lidar, IMU]
-  end
-  robot -- /scan /odom /tf --> slam[slam_toolbox]
-  slam -- /map --> nav[Nav2]
-  nav -- /cmd_vel --> robot
-  slam -- /map --> explorer
-  brain[brain: behaviour state machine] -- explore_cmd --> explorer
-  brain -- dock_cmd --> docking
-  explorer -- NavigateToPose --> nav
-  docking -- NavigateToPose --> nav
-  docking -- /cmd_vel --> robot
-  battery[battery_sim] -- /battery_state --> brain
-  brain & docking & explorer -- pip/events --> mood
-  mood -- pip/mood --> eyes
-  mood -- pip/sound, pip/say --> voice
+The parts list is in [docs/hardware.md](docs/hardware.md).
+
+## What's in here
+
+```
+src/
+  pip_description    the robot: body, wheels, lidar, IMU, as URDF
+  pip_gazebo         a small apartment with furniture and a charging dock
+  pip_navigation     slam_toolbox + Nav2, tuned for a 28 cm robot in 90 cm doorways
+  pip_brain          battery, docking, exploration, and the state machine that decides what to do
+  pip_personality    moods, the eyes, beeps and speech
+  pip_bringup        one launch file that starts all of it
+web/                 the browser version (no build step, plain JS)
+docs/                build notes, parts list, eye contact sheet
 ```
 
-| Package | What's in it |
-|---|---|
-| `pip_description` | Robot model (URDF/xacro) with Gazebo drive, lidar and IMU plugins |
-| `pip_gazebo` | Apartment world with furniture and a charging dock, plus the ROS-Gazebo bridge |
-| `pip_navigation` | SLAM and Nav2 configuration |
-| `pip_brain` | `battery_sim`, `docking`, `explorer`, `brain` and the `pipctl` command-line tool |
-| `pip_personality` | `mood` engine, `eyes` (GC9A01-sized round displays) and `voice` (beeps plus Piper or espeak-ng) |
-| `pip_bringup` | One launch file that starts everything, plus the RViz layout |
+Roughly how the pieces talk:
 
-## Run it
+```
+lidar, odometry ──► slam_toolbox ──► map ──► explorer ──┐
+                                              │          ├──► Nav2 ──► wheels
+battery ──► brain ──► "go explore" / "go home" ┘          │
+                 └──► docking (lidar line fit) ──────────┘
+everything ──► pip/events ──► mood ──► eyes, beeps, the odd sentence
+```
 
-You need Ubuntu 24.04, either native or WSL2 on Windows (hardware virtualization must be on in the BIOS).
+## Running the ROS version
+
+Fair warning: I haven't launched this in Gazebo on my own machine yet (my BIOS had virtualization
+switched off, so WSL couldn't run Linux). CI builds and tests every package inside a ROS 2 Jazzy
+container, but the first real launch will probably need a fix or two.
+
+On Ubuntu 24.04, natively or under WSL2:
 
 ```bash
-# once: install ROS 2 Jazzy, Gazebo Harmonic, Nav2, slam_toolbox (as root)
-sudo bash scripts/setup_wsl.sh
-# build
+sudo bash scripts/setup_wsl.sh   # ROS 2 Jazzy, Gazebo Harmonic, Nav2, slam_toolbox
 bash scripts/build.sh
-# go
-bash scripts/run_sim.sh            # add headless:=true to skip the Gazebo window
+bash scripts/run_sim.sh          # headless:=true skips the Gazebo window
 ```
 
-Pip starts on its dock, says hello, undocks and starts exploring. Talk to it from another terminal:
+Then, from another terminal:
 
 ```bash
 source ~/pip_ws/install/setup.bash
-ros2 run pip_brain pipctl hello     # explore | patrol | dock | stop | sleep | wake | hello
-ros2 run teleop_twist_keyboard teleop_twist_keyboard   # drive it yourself
+ros2 run pip_brain pipctl hello   # or explore, patrol, dock, sleep, wake, stop
 ```
 
 ## Tests
 
-The logic is plain Python, so it's tested without ROS. The tests include a closed-loop docking test:
-a simulated robot and lidar run through the real controller from four bad starting poses.
+Most of the logic is plain Python, so it's tested without ROS:
 
 ```bash
-pip install numpy pytest && pytest
-python scripts/render_eyes.py      # regenerate docs/eyes.png (needs pygame)
+pip install numpy pytest pyyaml && pytest
 ```
 
-CI runs those tests and builds and tests every package in a ROS 2 Jazzy container.
+The one I trust most is `test_docking_loop.py`. It puts a simulated robot in front of a simulated
+dock with a simulated lidar, starting from four bad positions, and runs the real docking controller
+until it would hand over to the final creep. If that test passes, the geometry is right.
 
-## Hardware
-
-Parts list, wiring and the Pi-to-microcontroller protocol: [docs/hardware.md](docs/hardware.md).
+There's also a config test that checks that the spawn point, the dock's position in the world and
+the docking code's contact distance all agree, because those live in three different files and
+drift apart silently.
 
 ## License
 
