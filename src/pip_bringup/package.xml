@@ -14,6 +14,10 @@
   <exec_depend>pip_personality</exec_depend>
   <exec_depend>rviz2</exec_depend>
 
+  <test_depend>python3-pytest</test_depend>
+  <test_depend>python3-yaml</test_depend>
+  <test_depend>xacro</test_depend>
+
   <export>
     <build_type>ament_python</build_type>
   </export>
