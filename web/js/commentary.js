@@ -4,7 +4,7 @@ import { BOUNDS } from './world.js';
 
 const NODES = [
   {
-    view: 'face', left: 50, top: 8,
+    view: 'face', left: 50, top: 80,
     title: 'Two round screens, not one rectangle',
     text: `One wide OLED would have been simpler to wire. But a face with one screen reads as a phone
       taped to a box. Two 1.28" GC9A01 rounds read as eyes before you've even seen them move, and
@@ -97,7 +97,7 @@ export function setupCommentary(onToggle) {
     node.style.top = `${top}%`;
 
     const card = document.createElement('div');
-    card.className = 'note';
+    card.className = 'note px';
     card.hidden = true;
     card.innerHTML = `<p class="note-title"><span>${i + 1}</span>${n.title}</p><p>${n.text.replace(/\s+/g, ' ')}</p>`;
     card.classList.toggle('above', top > 55);

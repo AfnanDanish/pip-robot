@@ -5,37 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pip</title>
   <meta name="description" content="Pip is a small home robot. Watch it map an apartment, wander around and put itself back on its charger, right here in the browser.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='7' width='26' height='19' rx='6' fill='%23f29e2e'/%3E%3Ccircle cx='11.5' cy='16.5' r='4.5' fill='%2317140f'/%3E%3Ccircle cx='20.5' cy='16.5' r='4.5' fill='%2317140f'/%3E%3Crect x='10' y='14' width='3' height='5' rx='1' fill='%235ae1ff'/%3E%3Crect x='19' y='14' width='3' height='5' rx='1' fill='%235ae1ff'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 8' shape-rendering='crispEdges'%3E%3Cpath fill='%232b2128' d='M1 0h9v1h1v6h-1v1H1V7H0V1h1z'/%3E%3Cpath fill='%23f39a2e' d='M1 1h9v6H1z'/%3E%3Cpath fill='%232b2128' d='M2 2h3v3H2zM6 2h3v3H6z'/%3E%3Cpath fill='%235ce1ff' d='M3 3h1v2H3zM7 3h1v2H7z'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600&family=VT323&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="top">
-    <span class="wordmark"><span class="mark" aria-hidden="true"></span>Pip</span>
+    <span class="wordmark">
+      <svg viewBox="0 0 11 8" shape-rendering="crispEdges" aria-hidden="true">
+        <path fill="#2b2128" d="M1 0h9v1h1v6h-1v1H1V7H0V1h1z"/>
+        <path fill="#f39a2e" d="M1 1h9v6H1z"/>
+        <path fill="#ffc35c" d="M1 1h9v1H1z"/>
+        <path fill="#2b2128" d="M2 2h3v3H2zM6 2h3v3H6z"/>
+        <path fill="#5ce1ff" d="M3 3h1v2H3zM7 3h1v2H7z"/>
+      </svg>
+      Pip
+    </span>
     <a href="https://github.com/AfnanDanish/pip-robot">Source</a>
   </header>
 
   <main>
     <section class="hero">
       <div class="face" data-commentary="face">
-        <canvas id="eyes" width="880" height="520" aria-label="Pip's face"></canvas>
-        <div id="bubble" class="bubble" role="status" aria-live="polite"></div>
+        <canvas id="eyes" width="184" height="112" aria-label="Pip's face"></canvas>
+        <div id="bubble" class="bubble px" role="status" aria-live="polite"></div>
       </div>
 
       <div class="side">
         <h1>A small robot that maps your home and puts itself to bed</h1>
         <p class="lede">This is Pip, running live. It starts on its charger knowing nothing, explores until
           the whole apartment is on its map, wanders, and drives home when the battery gets low.
-          Drop boxes in its way or send it somewhere. The numbered dots are me explaining why things are
-          the way they are.</p>
+          Drop boxes in its way or send it somewhere. The numbered signs are me explaining why things
+          are the way they are.</p>
 
-        <dl class="status">
+        <dl class="status px">
           <div><dt>Doing</dt><dd id="st-state">Waking up</dd></div>
           <div><dt>Feeling</dt><dd id="st-mood">neutral</dd></div>
-          <div><dt>Battery</dt><dd><span class="battery"><span id="st-bat-bar"></span></span><span id="st-bat" class="num">100%</span></dd></div>
-          <div><dt>Mapped</dt><dd id="st-map" class="num">0.0 m²</dd></div>
+          <div><dt>Battery</dt><dd><span class="cells" id="st-cells"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span id="st-bat">100%</span></dd></div>
+          <div><dt>Mapped</dt><dd id="st-map">0.0 m²</dd></div>
         </dl>
 
         <div class="controls">
@@ -64,12 +73,12 @@
 
     <section class="plans">
       <figure>
-        <figcaption><span>The apartment</span><small>Click the floor to drop a box, click it again to take it away</small></figcaption>
-        <div class="sheet" data-commentary="world"><canvas id="world"></canvas></div>
+        <figcaption><span>The apartment</span><small>Click the floor to drop a box, click again to take it away</small></figcaption>
+        <div class="sheet px"><div class="plane" data-commentary="world"><canvas id="world"></canvas></div></div>
       </figure>
       <figure>
         <figcaption><span>What Pip knows</span><small>Click anywhere to send it there</small></figcaption>
-        <div class="sheet" data-commentary="map"><canvas id="map"></canvas></div>
+        <div class="sheet px"><div class="plane" data-commentary="map"><canvas id="map"></canvas></div></div>
         <p class="key">
           <span><i class="k-free"></i>floor</span>
           <span><i class="k-wall"></i>wall</span>
@@ -81,18 +90,18 @@
     </section>
 
     <section class="below">
-      <div class="diary">
+      <div class="diary px">
         <h2>Pip's day so far</h2>
         <ol id="log"></ol>
       </div>
-      <div class="about">
+      <div class="about px">
         <h2>Under the hood</h2>
         <p>Every lidar sweep marks the cells a beam passes through as floor and the cell it hits as wall.
           That's the whole map. Pip heads for the edges of what it knows, plans with A* around walls
           padded by its own radius, and re-plans every second, which is why a box you drop just gets
           driven around.</p>
         <p>Docking doesn't use the planner at all past a point. It looks for the dock's flat face in the
-          scan, lines up on its centre line, and creeps the last bit blind. Dots 4 and 5 have the long
+          scan, lines up on its centre line, and creeps the last bit blind. Signs 4 and 5 have the long
           version.</p>
         <p>The real Pip runs the same ideas on ROS 2 (Nav2, slam_toolbox, Gazebo for now). The code, the
           robot model and the build notes are <a href="https://github.com/AfnanDanish/pip-robot">on GitHub</a>.</p>

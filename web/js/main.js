@@ -6,9 +6,9 @@ import { Grid } from './grid.js';
 import { MoodEngine } from './mood.js';
 import { Navigator } from './nav.js';
 import { findFrontiers } from './plan.js';
-import { drawWorld, MapPainter, View } from './render.js';
+import { MapPainter, View, WorldPainter } from './render.js';
 import { Battery, MAP_RANGE, Robot } from './robot.js';
-import { DOCKED_POSE, roomAt, World } from './world.js';
+import { BOUNDS, DOCKED_POSE, FURNITURE, roomAt, World } from './world.js';
 
 // The physics runs at 50 Hz and the lidar at 10 Hz, same as the Gazebo version. Speeding the page
 // up runs more physics steps per frame rather than bigger ones, so 8× behaves like 1×, just sooner.
@@ -30,6 +30,23 @@ let mood = new MoodEngine();
 const eyes = new EyeRenderer();
 const voice = new Voice();
 const painter = new MapPainter(grid);
+const worldPainter = new WorldPainter();
+
+// Room and furniture names sit on top of the floor plan as real text in the pixel font.
+function tag(host, text, x, y) {
+  const el = document.createElement('span');
+  el.className = 'tag';
+  el.textContent = text;
+  el.style.left = `${((x - BOUNDS.xmin) / (BOUNDS.xmax - BOUNDS.xmin)) * 100}%`;
+  el.style.top = `${((BOUNDS.ymax - y) / (BOUNDS.ymax - BOUNDS.ymin)) * 100}%`;
+  host.append(el);
+}
+const plan = document.querySelector('[data-commentary="world"]');
+tag(plan, 'living room', 2.0, -0.35);
+tag(plan, 'bedroom', -1.55, 0.45);
+tag(plan, 'kitchen', -3.1, -0.4);
+for (const f of FURNITURE) if (f.label && f.label !== 'tv') tag(plan, f.label, f.box[0], f.box[1] - (f.name === 'bed' ? 0.35 : 0));
+const cells = [...document.querySelectorAll('#st-cells i')];
 
 let simTime = 0;
 let nextScan = 0;
@@ -108,7 +125,7 @@ function frame(now) {
     painter.version = -1;
   }
 
-  drawWorld(worldView, world, robot, scan);
+  worldPainter.draw(worldView, world, robot, scan, simTime, brain.charging());
   painter.draw(mapView, {
     robot, nav, dock: DOCKED_POSE,
     blacklist: brain.state === 'exploring' ? brain.blacklist : [],
@@ -124,9 +141,10 @@ function frame(now) {
   $('st-state').textContent = label;
   $('st-mood').textContent = currentMood;
   $('st-bat').textContent = `${Math.round(battery.level * 100)}%`;
-  const bar = $('st-bat-bar');
-  bar.style.width = `${battery.level * 100}%`;
-  bar.style.background = battery.level < 0.25 ? '#c4452f' : brain.charging() ? '#3f8f5e' : '#2b2620';
+  const lit = Math.ceil(battery.level * cells.length - 0.001);
+  cells.forEach((c, i) => c.classList.toggle('full', i < lit));
+  $('st-cells').classList.toggle('low', battery.level < 0.25);
+  $('st-cells').classList.toggle('charging', brain.charging());
   $('st-map').textContent = `${grid.freeArea().toFixed(1)} m²`;
   $('sleepBtn').textContent = brain.sleeping ? 'Wake up' : 'Sleep';
   if (brain.state !== lastState) {
