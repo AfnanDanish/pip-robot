@@ -1,6 +1,6 @@
-# Firmware (Phase B)
+# Firmware
 
-ESP32 firmware for Pip's real-time side lands here. It covers:
+ESP32 firmware for the real-time side of Pip. It covers:
 - wheel speed PID loops
 - encoders
 - the IMU

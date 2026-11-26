@@ -31,7 +31,7 @@ Prices vary a lot. Check local shops before buying.
 | Safety | 2 × IR cliff sensors, front bump switch | Stops it driving down stairs |
 | Chassis | MDF, acrylic or 3D print, plus casters | |
 
-## Serial protocol (Phase B)
+## Serial protocol
 
 Binary frames between the Pi and the ESP32: `0xA5 | len | type | payload | CRC-16`.
 - Pi → ESP32: wheel velocity setpoints at 50 Hz.

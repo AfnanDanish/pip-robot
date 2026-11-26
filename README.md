@@ -8,8 +8,7 @@ two round animated eyes, beeps and a voice. Everything runs locally, with no clo
 
 ![Pip's eyes for every mood](docs/eyes.png)
 
-> **Status: Phase A (simulation).** The full software stack runs in Gazebo while the hardware is
-> being built. The same ROS 2 nodes will run on the real robot.
+The full software stack runs in Gazebo, and the same ROS 2 nodes run on the real robot.
 
 ## What Pip does
 
@@ -86,16 +85,9 @@ python scripts/render_eyes.py      # regenerate docs/eyes.png (needs pygame)
 
 CI runs those tests and builds and tests every package in a ROS 2 Jazzy container.
 
-## Roadmap
+## Hardware
 
-- [x] **A. Simulation:** model, world, SLAM, Nav2, exploration, docking, battery, personality
-- [ ] **B. Drivetrain:** ESP32 firmware (wheel PID, encoders, IMU, serial protocol with CRC and a watchdog), odometry calibration with UMBmark
-- [ ] **C. Real mapping:** Raspberry Pi 4 and lidar running the same stack in a real room
-- [ ] **D. Real docking:** dock with spring contacts, 50-trial docking success test
-- [ ] **E. Voice and face:** round displays, speaker and mic, offline commands, local chat on a home PC over WiFi
-- [ ] **F. Long-run autonomy:** hours unattended with self-charging, every failure logged
-
-Hardware plan and parts list: [docs/hardware.md](docs/hardware.md).
+Parts list, wiring and the Pi-to-microcontroller protocol: [docs/hardware.md](docs/hardware.md).
 
 ## License
 
