@@ -20,4 +20,5 @@ setup(
     maintainer_email='pip-robot@users.noreply.github.com',
     description='Top-level launch for Pip',
     license='MIT',
+    tests_require=['pytest'],
 )
