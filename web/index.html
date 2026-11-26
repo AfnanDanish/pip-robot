@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pip · live simulation</title>
+  <meta name="description" content="Pip, a small autonomous home robot, maps an apartment, explores it and docks itself, live in your browser.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='7' width='26' height='19' rx='6' fill='%23f29e2e'/%3E%3Crect x='9' y='12' width='5' height='8' rx='2' fill='%235ae1ff'/%3E%3Crect x='18' y='12' width='5' height='8' rx='2' fill='%235ae1ff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo" aria-hidden="true"></span>
+      <h1>Pip</h1>
+      <span class="tag">a small home robot with a personality</span>
+    </div>
+    <a class="source" href="https://github.com/AfnanDanish/pip-robot">Source on GitHub</a>
+  </header>
+
+  <main>
+    <section class="face panel">
+      <div class="eyes-wrap">
+        <canvas id="eyes" width="720" height="340" aria-label="Pip's eyes"></canvas>
+        <div id="bubble" class="bubble" role="status"></div>
+      </div>
+      <dl class="status">
+        <div><dt>Doing</dt><dd id="st-state">Starting up</dd></div>
+        <div><dt>Mood</dt><dd id="st-mood">neutral</dd></div>
+        <div><dt>Battery</dt><dd><span class="battery"><span id="st-bat-bar"></span></span><span id="st-bat">100%</span></dd></div>
+        <div><dt>Mapped</dt><dd id="st-map">0 m²</dd></div>
+      </dl>
+    </section>
+
+    <section class="controls panel">
+      <div class="row">
+        <button data-cmd="explore">Explore</button>
+        <button data-cmd="patrol">Wander</button>
+        <button data-cmd="home">Go home</button>
+        <button data-cmd="hello">Say hi</button>
+        <button data-cmd="sleep" id="sleepBtn">Sleep</button>
+        <button data-cmd="stop">Stop</button>
+      </div>
+      <div class="row">
+        <span class="label">Speed</span>
+        <button data-speed="1" class="on">1×</button>
+        <button data-speed="2">2×</button>
+        <button data-speed="4">4×</button>
+        <button data-speed="8">8×</button>
+        <span class="spacer"></span>
+        <button id="sound">Sound off</button>
+        <button id="reset">Reset</button>
+      </div>
+    </section>
+
+    <section class="views">
+      <figure class="panel">
+        <figcaption>The apartment <small>Click to drop or remove a box</small></figcaption>
+        <canvas id="world"></canvas>
+      </figure>
+      <figure class="panel">
+        <figcaption>Pip's map <small>Click to send Pip there</small></figcaption>
+        <canvas id="map"></canvas>
+        <div class="legend">
+          <span><i style="background:#e9e4d8"></i>free</span>
+          <span><i style="background:#18181e"></i>wall</span>
+          <span><i style="background:#2c2c36"></i>unknown</span>
+          <span><i style="background:#5ae1ff"></i>frontier</span>
+          <span><i style="background:#3ddc84"></i>path</span>
+          <span><i style="background:#ff9a1f"></i>dock</span>
+        </div>
+      </figure>
+    </section>
+
+    <section class="bottom">
+      <div class="panel">
+        <h2>What Pip is doing</h2>
+        <ol id="log"></ol>
+      </div>
+      <div class="panel about">
+        <h2>How it works</h2>
+        <p>Pip starts on its charging dock and knows nothing about the apartment. Each lidar sweep marks the
+          cells a beam passes through as free and the cell it hits as a wall. That builds the map on the right.</p>
+        <p><b>Exploring:</b> Pip drives to <em>frontiers</em>, where known floor meets the unknown, until none are
+          left. Paths come from A* on the map with walls inflated by Pip's radius, followed with pure pursuit and
+          re-planned every second, so dropped boxes get routed around.</p>
+        <p><b>Docking:</b> below 25% battery Pip drives to a point in front of the dock, finds the dock's flat face
+          in the lidar scan with a RANSAC line fit, lines up on its centre line, and creeps onto the contacts.
+          If it misses, it backs off and tries again.</p>
+        <p>This page runs the same algorithms as the ROS 2 packages in the repo, ported to JavaScript. To stay
+          light it uses Pip's true position. The ROS version uses <code>slam_toolbox</code> and Nav2 in Gazebo.</p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

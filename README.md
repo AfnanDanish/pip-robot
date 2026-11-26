@@ -6,6 +6,9 @@ A small home robot with a personality. Pip maps your home with a lidar, wanders 
 drives itself back to its charging dock when the battery runs low, and shows how it feels through
 two round animated eyes, beeps and a voice. Everything runs locally, with no cloud needed.
 
+**[▶ Watch Pip live in your browser](https://afnandanish.github.io/pip-robot/)**. It maps the apartment,
+explores, wanders and docks itself. Drop boxes in its way or click its map to send it somewhere.
+
 ![Pip's eyes for every mood](docs/eyes.png)
 
 The full software stack runs in Gazebo, and the same ROS 2 nodes run on the real robot.
