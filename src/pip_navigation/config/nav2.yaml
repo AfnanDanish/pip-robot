@@ -1,4 +1,11 @@
-# Nav2 parameters for Pip (ROS 2 Jazzy). Robot radius 0.14 m, top speed 0.25 m/s.
+# Nav2 parameters for Pip (ROS 2 Jazzy).
+#
+# The numbers that matter:
+#   robot_radius 0.14   the body is 20 x 16 cm, so its corners sit 12.8 cm from centre, plus a bit.
+#   inflation 0.30      walls get padded so paths run down the middle of a 90 cm doorway instead
+#                       of scraping the frame. Bigger and the doorways start closing up.
+#   0.25 m/s            Pip is small and lives around people's feet. Fast looks anxious.
+#   xy tolerance 0.15   good enough for "go to the kitchen". Docking doesn't rely on it.
 
 bt_navigator:
   ros__parameters:

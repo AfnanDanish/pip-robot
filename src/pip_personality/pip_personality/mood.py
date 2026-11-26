@@ -19,24 +19,31 @@ class Rule:
     phrases: tuple[str, ...] = ()
 
 
+# Pip's voice: small, earnest, a bit dramatic about its battery. Short lines. It's a 1.5 kg robot,
+# it shouldn't monologue. The browser version (web/js/mood.js) uses the same lines.
 RULES = {
-    'boot': Rule('happy', 4.0, 'greet', ('Hi! I am Pip.', 'Pip online!')),
-    'greet': Rule('happy', 4.0, 'greet', ('Hello!', 'Hi there!', 'Oh, hi!')),
-    'undocking': Rule('excited', 3.0, 'excited', ('Off we go!', 'Adventure time.')),
-    'exploration_started': Rule('curious', 5.0, 'curious', ("Let's see what's out there.",)),
+    'boot': Rule('happy', 4.0, 'greet', ('Morning.', 'Pip, awake. Mostly.')),
+    'greet': Rule('happy', 4.0, 'greet', ('Hi.', 'Oh. Hello.', 'Hi! I live here now.')),
+    'undocking': Rule('excited', 3.0, 'excited',
+                      ('Okay. Going.', 'Back in a bit.', 'Off the dock, into the unknown.')),
+    'exploration_started': Rule('curious', 5.0, 'curious',
+                                ("Let's see what's behind the doors.", 'Mapping mode.')),
     'new_frontier': Rule('curious', 3.0, 'curious'),
     'exploration_done': Rule('proud', 6.0, 'proud',
-                             ('I mapped the whole place!', 'Done exploring. I know this place now.')),
+                             ("That's everything. I know this place now.",
+                              'Map done. Every wall accounted for.')),
     'patrol_arrived': Rule('curious', 3.0, 'hmm'),
-    'nav_failed': Rule('frustrated', 4.0, 'frustrated', ("Hmm. I can't get there.", 'Blocked.')),
-    'close_call': Rule('startled', 2.0, 'startled', ('Whoa!',)),
-    'low_battery': Rule('tired', 6.0, 'sad', ('Running low. Heading home.', 'So sleepy... going to charge.')),
-    'docked': Rule('content', 5.0, 'happy', ('Home sweet home.', 'Charging up.')),
-    'charged': Rule('happy', 4.0, 'happy', ('Fully charged!',)),
-    'dock_failed': Rule('frustrated', 4.0, 'frustrated', ('Missed the dock. Trying again.',)),
-    'stranded': Rule('sad', 10.0, 'sad', ("I'm stuck. Can someone help me?",)),
-    'sleep': Rule('sleepy', 6.0, 'sleepy', ('Good night.',)),
-    'wake': Rule('happy', 3.0, 'greet', ("I'm awake!",)),
+    'nav_failed': Rule('frustrated', 4.0, 'frustrated',
+                       ("Can't get there.", 'Nope. Blocked.', "That spot doesn't want me.")),
+    'close_call': Rule('startled', 2.0, 'startled', ('Whoa.', 'Close one.')),
+    'low_battery': Rule('tired', 6.0, 'sad',
+                        ('Twenty-five percent. Going home.', 'Getting sleepy. Heading to the dock.')),
+    'docked': Rule('content', 5.0, 'happy', ('Home.', 'Contacts. Lovely.', 'Charging.')),
+    'charged': Rule('happy', 4.0, 'happy', ('Full.', 'Battery full. I feel unstoppable.')),
+    'dock_failed': Rule('frustrated', 4.0, 'frustrated', ('Missed. Backing up.', 'Hm. One more go.')),
+    'stranded': Rule('sad', 10.0, 'sad', ("I'm stuck. Little help?",)),
+    'sleep': Rule('sleepy', 6.0, 'sleepy', ('Night.', 'Going to sleep now.')),
+    'wake': Rule('happy', 3.0, 'greet', ("I'm up. I'm up.",)),
 }
 
 # Events Pip always answers out loud, even if it spoke recently.

@@ -30,7 +30,10 @@ class Brain(Node):
     def __init__(self):
         super().__init__('brain')
         p = self.declare_parameter
+        # 25% is enough to cross the apartment twice if the first route home is blocked.
         self.low_battery = p('low_battery', 0.25).value
+        # Leave at 90, not 100: the last stretch of a Li-ion charge (constant voltage) is slow
+        # and buys very little range.
         self.resume_battery = p('resume_battery', 0.90).value
         self.patrol_pause = p('patrol_pause', 6.0).value
         self.patrol_min_distance = p('patrol_min_distance', 1.5).value

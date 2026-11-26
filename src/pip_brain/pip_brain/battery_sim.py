@@ -23,7 +23,8 @@ class BatterySim(Node):
         self.drive_w_per_mps = p('drive_w_per_mps', 12.0).value
         self.turn_w_per_radps = p('turn_w_per_radps', 2.0).value
         self.charge_w = p('charge_w', 25.0).value
-        # Makes the battery drain and charge faster than real life so a demo takes minutes, not hours.
+        # A real charge cycle takes hours. Nobody is watching a simulation for hours, so time runs
+        # 25x faster for the battery only.
         self.speedup = p('speedup', 25.0).value
         # Docked pose in the odom frame. Pip spawns on the dock, so this is the odom origin.
         self.dock = (p('dock_x', 0.0).value, p('dock_y', 0.0).value, p('dock_yaw', 0.0).value)

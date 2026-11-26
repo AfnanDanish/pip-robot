@@ -33,11 +33,18 @@ class Docking(Node):
     def __init__(self):
         super().__init__('docking')
         p = self.declare_parameter
-        # Pose of base_footprint when Pip is docked, in the map frame.
+        # Where base_footprint sits when Pip is on the dock, in the map frame. Pip boots on the dock,
+        # so this is the map origin unless someone moves the dock.
         self.dock = (p('dock_x', 0.0).value, p('dock_y', 0.0).value, p('dock_yaw', 0.0).value)
-        self.contact_offset = p('contact_offset', 0.11).value  # robot centre to dock face, docked
+        # Robot centre to dock face when docked. The bumper is 10 cm from centre and the spring
+        # contacts need about 1 cm of squash, hence 11.
+        self.contact_offset = p('contact_offset', 0.11).value
+        # Nav2 gets within ~15 cm of a goal. 60 cm out leaves room to turn and line up properly.
         self.staging_dist = p('staging_dist', 0.6).value
+        # Below this the lidar (min range 12 cm) is about to go blind on the dock face, so stop
+        # steering and creep straight in on odometry.
         self.creep_start = p('creep_start', 0.28).value
+        # Three misses means something is actually wrong (dock moved, contacts dirty). Ask a human.
         self.max_retries = p('max_retries', 3).value
 
         self.tf_buffer = Buffer()
