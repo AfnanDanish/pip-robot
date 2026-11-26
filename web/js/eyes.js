@@ -63,18 +63,70 @@ export class EyeRenderer {
     return d < 0 || d > 0.16 ? 1 : Math.abs(d - 0.08) / 0.08;
   }
 
+  // Pip's front panel: the orange shell, the two round screens, screws and the charging contacts.
+  // Proportions follow the real body (20 x 10 cm face, two 1.28" screens).
   draw(ctx, W, H) {
     ctx.clearRect(0, 0, W, H);
-    const gap = W * 0.05;
-    const D = Math.min((W - gap) / 2 - 8, H - 16);
-    const x0 = (W - (2 * D + gap)) / 2;
-    const y0 = (H - D) / 2;
+    const pad = W * 0.04;
+    const shellW = W - 2 * pad;
+    const shellH = H * 0.86;
+    const sx = pad;
+    const sy = H * 0.04;
+    const radius = shellH * 0.16;
+
+    // Shadow on the desk.
+    ctx.fillStyle = 'rgba(31, 27, 22, 0.07)';
+    ctx.beginPath();
+    ctx.ellipse(W / 2, sy + shellH + H * 0.03, shellW * 0.42, H * 0.022, 0, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Shell, with a slight top-to-bottom tone shift so it reads as a painted object, not a flat box.
+    const shell = ctx.createLinearGradient(0, sy, 0, sy + shellH);
+    shell.addColorStop(0, '#f6a940');
+    shell.addColorStop(1, '#e88f22');
+    ctx.fillStyle = shell;
+    roundRect(ctx, sx, sy, shellW, shellH, radius);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(110, 60, 0, 0.35)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Bumper lip and charging contacts.
+    ctx.fillStyle = 'rgba(80, 40, 0, 0.18)';
+    roundRect(ctx, sx + shellW * 0.06, sy + shellH * 0.86, shellW * 0.88, shellH * 0.06, shellH * 0.03);
+    ctx.fill();
+    ctx.fillStyle = '#d8b65a';
+    for (const fx of [0.32, 0.68]) {
+      roundRect(ctx, sx + shellW * fx - shellW * 0.04, sy + shellH * 0.865, shellW * 0.08, shellH * 0.05, 3);
+      ctx.fill();
+    }
+
+    // Screws.
+    for (const [fx, fy] of [[0.05, 0.1], [0.95, 0.1], [0.05, 0.76], [0.95, 0.76]]) {
+      const x = sx + shellW * fx;
+      const y = sy + shellH * fy;
+      ctx.fillStyle = 'rgba(80, 40, 0, 0.35)';
+      ctx.beginPath();
+      ctx.arc(x, y, shellH * 0.022, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 230, 190, 0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x - shellH * 0.012, y);
+      ctx.lineTo(x + shellH * 0.012, y);
+      ctx.stroke();
+    }
+
+    const gap = shellW * 0.07;
+    const D = Math.min((shellW * 0.84 - gap) / 2, shellH * 0.66);
+    const x0 = W / 2 - D - gap / 2;
+    const y0 = sy + shellH * 0.43 - D / 2;
     ['left', 'right'].forEach((side, i) => {
       const cx = x0 + i * (D + gap) + D / 2;
       const cy = y0 + D / 2;
-      ctx.fillStyle = '#34343c';
+      ctx.fillStyle = '#17140f';
       ctx.beginPath();
-      ctx.arc(cx, cy, D / 2 + D * 0.035, 0, 2 * Math.PI);
+      ctx.arc(cx, cy, D / 2 + D * 0.06, 0, 2 * Math.PI);
       ctx.fill();
       ctx.save();
       ctx.beginPath();

@@ -1,6 +1,11 @@
-// Drawing for the two top-down views: the real apartment and Pip's own map.
+// Drawing for the two plans: the real apartment (a floor plan) and Pip's own map (graph paper).
 import { FREE, OCC } from './grid.js';
 import { BOUNDS, BOX_SIZE, DOCK, FURNITURE, PLANT, ROOMS, WALLS } from './world.js';
+
+const INK = '#2b2620';
+const PAPER = '#fdfbf7';
+const PIP = '#f29e2e';
+const FONT = '"Instrument Sans", system-ui, sans-serif';
 
 export class View {
   constructor(canvas) {
@@ -29,77 +34,92 @@ export class View {
     return [BOUNDS.xmin + px / this.s, BOUNDS.ymax - py / this.s];
   }
 
-  box(cx, cy, sx, sy) {
-    this.ctx.fillRect(this.X(cx - sx / 2), this.Y(cy + sy / 2), sx * this.s, sy * this.s);
+  rect(cx, cy, sx, sy) {
+    this.ctx.beginPath();
+    this.ctx.rect(this.X(cx - sx / 2), this.Y(cy + sy / 2), sx * this.s, sy * this.s);
   }
 }
 
-export function drawRobot(view, r, alpha = 1) {
+// Top-down Pip: orange body, wheels, lidar turret, two eye slits at the front.
+export function drawRobot(view, r) {
   const { ctx, s } = view;
   ctx.save();
-  ctx.globalAlpha = alpha;
   ctx.translate(view.X(r.x), view.Y(r.y));
   ctx.rotate(-r.th);
-  ctx.fillStyle = '#16161b';
-  ctx.fillRect(-0.06 * s, -0.11 * s, 0.12 * s, 0.03 * s);
-  ctx.fillRect(-0.06 * s, 0.08 * s, 0.12 * s, 0.03 * s);
-  ctx.fillStyle = '#f29e2e';
-  ctx.strokeStyle = '#6b4310';
+  ctx.fillStyle = INK;
+  ctx.fillRect(-0.06 * s, -0.11 * s, 0.12 * s, 0.025 * s);
+  ctx.fillRect(-0.06 * s, 0.085 * s, 0.12 * s, 0.025 * s);
+  ctx.fillStyle = PIP;
+  ctx.strokeStyle = '#7a4300';
   ctx.lineWidth = Math.max(1, 0.006 * s);
   ctx.beginPath();
   ctx.roundRect(-0.1 * s, -0.08 * s, 0.2 * s, 0.16 * s, 0.03 * s);
   ctx.fill();
   ctx.stroke();
-  ctx.fillStyle = '#26262c';
+  ctx.fillStyle = INK;
   ctx.beginPath();
-  ctx.arc(0, 0, 0.035 * s, 0, 2 * Math.PI);
+  ctx.arc(0, 0, 0.034 * s, 0, 2 * Math.PI);
   ctx.fill();
-  ctx.fillStyle = '#0b0b0e';
-  ctx.fillRect(0.088 * s, -0.06 * s, 0.014 * s, 0.12 * s);
   ctx.fillStyle = '#5ae1ff';
-  ctx.fillRect(0.09 * s, -0.04 * s, 0.01 * s, 0.022 * s);
-  ctx.fillRect(0.09 * s, 0.018 * s, 0.01 * s, 0.022 * s);
+  ctx.fillRect(0.086 * s, -0.045 * s, 0.012 * s, 0.025 * s);
+  ctx.fillRect(0.086 * s, 0.02 * s, 0.012 * s, 0.025 * s);
   ctx.restore();
+}
+
+function label(view, text, x, y, size = 0.15, color = 'rgba(43,38,32,0.45)') {
+  const { ctx, s } = view;
+  ctx.fillStyle = color;
+  ctx.font = `500 ${Math.round(size * s)}px ${FONT}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, view.X(x), view.Y(y));
 }
 
 export function drawWorld(view, world, robot, scan) {
   const { ctx, s } = view;
-  ctx.fillStyle = '#101014';
+  ctx.fillStyle = PAPER;
   ctx.fillRect(0, 0, view.canvas.width, view.canvas.height);
+
   for (const room of ROOMS) {
     ctx.fillStyle = room.color;
-    view.box((room.x0 + room.x1) / 2, (room.y0 + room.y1) / 2, room.x1 - room.x0, room.y1 - room.y0);
+    view.rect((room.x0 + room.x1) / 2, (room.y0 + room.y1) / 2, room.x1 - room.x0, room.y1 - room.y0);
+    ctx.fill();
   }
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  ctx.font = `${Math.round(0.17 * s)}px system-ui, sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.fillText('Living room', view.X(2.0), view.Y(-0.25));
-  ctx.fillText('Bedroom', view.X(-1.6), view.Y(0.55));
-  ctx.fillText('Kitchen', view.X(-3.0), view.Y(-0.5));
 
+  ctx.lineWidth = Math.max(1, 0.012 * s);
   for (const f of FURNITURE) {
     ctx.fillStyle = f.color;
-    view.box(...f.box);
+    ctx.strokeStyle = 'rgba(43,38,32,0.5)';
+    view.rect(...f.box);
+    ctx.fill();
+    ctx.stroke();
+    if (f.label) label(view, f.label, f.box[0], f.box[1], 0.11, 'rgba(43,38,32,0.6)');
   }
-  ctx.fillStyle = '#3f8a4c';
+  ctx.fillStyle = '#9cbf8a';
+  ctx.strokeStyle = 'rgba(43,38,32,0.5)';
   ctx.beginPath();
   ctx.arc(view.X(PLANT.x), view.Y(PLANT.y), PLANT.r * s, 0, 2 * Math.PI);
   ctx.fill();
-  ctx.fillStyle = '#2a2a30';
-  view.box(...DOCK.box);
-  ctx.fillStyle = '#ff9a1f';
-  view.box(DOCK.box[0] - 0.05, DOCK.box[1], 0.015, 0.2);
-  for (const b of world.boxes) {
-    ctx.fillStyle = '#c49a5a';
-    view.box(b.x, b.y, BOX_SIZE, BOX_SIZE);
-    ctx.fillStyle = '#e6c58f';
-    view.box(b.x, b.y, BOX_SIZE, 0.05);
-  }
-  ctx.fillStyle = '#e8e3d6';
-  for (const w of WALLS) view.box(...w);
+  ctx.stroke();
 
+  label(view, 'living room', 2.0, -0.3);
+  label(view, 'bedroom', -1.55, 0.5);
+  label(view, 'kitchen', -3.0, -0.45);
+
+  for (const b of world.boxes) {
+    ctx.fillStyle = '#d9b27a';
+    ctx.strokeStyle = '#8a6a3a';
+    view.rect(b.x, b.y, BOX_SIZE, BOX_SIZE);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255,250,235,0.7)';
+    view.rect(b.x, b.y, BOX_SIZE, 0.05);
+    ctx.fill();
+  }
+
+  // Lidar beams first so the walls sit on top of them.
   if (scan) {
-    ctx.strokeStyle = 'rgba(255, 70, 70, 0.16)';
+    ctx.strokeStyle = 'rgba(217, 72, 43, 0.12)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let i = 0; i < scan.ranges.length; i += 2) {
@@ -109,7 +129,19 @@ export function drawWorld(view, world, robot, scan) {
       ctx.lineTo(view.X(scan.x + r * Math.cos(a)), view.Y(scan.y + r * Math.sin(a)));
     }
     ctx.stroke();
-    ctx.fillStyle = '#ff4646';
+  }
+
+  ctx.fillStyle = INK;
+  for (const w of WALLS) { view.rect(...w); ctx.fill(); }
+  ctx.fillStyle = INK;
+  view.rect(...DOCK.box);
+  ctx.fill();
+  ctx.fillStyle = PIP;
+  view.rect(DOCK.box[0] - 0.045, DOCK.box[1], 0.02, 0.2);
+  ctx.fill();
+
+  if (scan) {
+    ctx.fillStyle = '#d9482b';
     const dot = Math.max(1.5, 0.018 * s);
     for (let i = 0; i < scan.ranges.length; i++) {
       if (!Number.isFinite(scan.ranges[i])) continue;
@@ -138,10 +170,10 @@ export class MapPainter {
         const i = r * w + c;
         const o = ((h - 1 - r) * w + c) * 4;
         let rgb;
-        if (mask && mask[i]) rgb = [90, 225, 255];
-        else if (cls[i] === FREE) rgb = [233, 228, 216];
-        else if (cls[i] === OCC) rgb = [24, 24, 30];
-        else rgb = [44, 44, 54];
+        if (mask && mask[i]) rgb = [47, 111, 179];
+        else if (cls[i] === FREE) rgb = [255, 253, 248];
+        else if (cls[i] === OCC) rgb = [43, 38, 32];
+        else rgb = [228, 222, 210];
         d[o] = rgb[0]; d[o + 1] = rgb[1]; d[o + 2] = rgb[2]; d[o + 3] = 255;
       }
     }
@@ -152,14 +184,21 @@ export class MapPainter {
     const { ctx, s } = view;
     const g = this.grid;
     if (g.version !== this.version) { this.refresh(mask); this.version = g.version; }
-    ctx.fillStyle = '#2c2c36';
+    ctx.fillStyle = '#e4ded2';
     ctx.fillRect(0, 0, view.canvas.width, view.canvas.height);
     ctx.imageSmoothingEnabled = false;
-    const x = view.X(g.x0);
-    const y = view.Y(g.y0 + g.h * g.res);
-    ctx.drawImage(this.off, x, y, g.w * g.res * s, g.h * g.res * s);
+    ctx.drawImage(this.off, view.X(g.x0), view.Y(g.y0 + g.h * g.res), g.w * g.res * s, g.h * g.res * s);
 
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    // Graph paper: a faint line every 50 cm so you can read distances off the map.
+    ctx.strokeStyle = 'rgba(43,38,32,0.07)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = -4; x <= 4.001; x += 0.5) { ctx.moveTo(view.X(x), 0); ctx.lineTo(view.X(x), view.canvas.height); }
+    for (let y = -3; y <= 3.001; y += 0.5) { ctx.moveTo(0, view.Y(y)); ctx.lineTo(view.canvas.width, view.Y(y)); }
+    ctx.stroke();
+
+    // Places Pip gave up on, crossed out in pencil.
+    ctx.strokeStyle = 'rgba(43,38,32,0.35)';
     ctx.lineWidth = Math.max(1, 0.012 * s);
     for (const [bx, by] of blacklist) {
       const k = 0.05 * s;
@@ -168,24 +207,35 @@ export class MapPainter {
       ctx.moveTo(view.X(bx) + k, view.Y(by) - k); ctx.lineTo(view.X(bx) - k, view.Y(by) + k);
       ctx.stroke();
     }
-    ctx.fillStyle = '#ff9a1f';
+
+    // Home.
+    ctx.fillStyle = PIP;
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = Math.max(1, 0.01 * s);
     ctx.beginPath();
-    ctx.arc(view.X(dock.x), view.Y(dock.y), 0.06 * s, 0, 2 * Math.PI);
+    ctx.arc(view.X(dock.x + 0.17), view.Y(dock.y), 0.055 * s, 0, 2 * Math.PI);
     ctx.fill();
+    ctx.stroke();
 
     if (nav.path) {
-      ctx.strokeStyle = '#3ddc84';
-      ctx.lineWidth = Math.max(2, 0.025 * s);
+      ctx.strokeStyle = PIP;
+      ctx.lineWidth = Math.max(2, 0.03 * s);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       ctx.beginPath();
       ctx.moveTo(view.X(robot.x), view.Y(robot.y));
       for (let i = nav.index; i < nav.path.length; i++) ctx.lineTo(view.X(nav.path[i][0]), view.Y(nav.path[i][1]));
       ctx.stroke();
     }
     if (nav.state === 'active' && nav.goal) {
-      ctx.strokeStyle = '#3ddc84';
-      ctx.lineWidth = Math.max(2, 0.02 * s);
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = Math.max(1.5, 0.015 * s);
+      const k = 0.07 * s;
+      const gx = view.X(nav.goal[0]);
+      const gy = view.Y(nav.goal[1]);
       ctx.beginPath();
-      ctx.arc(view.X(nav.goal[0]), view.Y(nav.goal[1]), 0.09 * s, 0, 2 * Math.PI);
+      ctx.moveTo(gx - k, gy); ctx.lineTo(gx + k, gy);
+      ctx.moveTo(gx, gy - k); ctx.lineTo(gx, gy + k);
       ctx.stroke();
     }
     drawRobot(view, robot);

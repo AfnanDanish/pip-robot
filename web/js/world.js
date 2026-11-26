@@ -4,10 +4,14 @@ import { pointSegmentDistance } from './util.js';
 export const BOUNDS = { xmin: -4.15, xmax: 4.15, ymin: -3.15, ymax: 3.15 };
 
 export const ROOMS = [
-  { name: 'Living room', x0: 0.05, x1: 4.0, y0: -3.0, y1: 3.0, color: '#b49673' },
-  { name: 'Bedroom', x0: -4.0, x1: -0.05, y0: 0.05, y1: 3.0, color: '#a08a7d' },
-  { name: 'Kitchen', x0: -4.0, x1: -0.05, y0: -3.0, y1: -0.05, color: '#9a9e99' },
+  { name: 'living room', x0: 0.05, x1: 4.0, y0: -3.0, y1: 3.0, color: '#efe4d3' },
+  { name: 'bedroom', x0: -4.0, x1: -0.05, y0: 0.05, y1: 3.0, color: '#ece2dc' },
+  { name: 'kitchen', x0: -4.0, x1: -0.05, y0: -3.0, y1: -0.05, color: '#e5e6df' },
 ];
+
+export function roomAt(x, y) {
+  return ROOMS.find((r) => x > r.x0 && x < r.x1 && y > r.y0 && y < r.y1)?.name ?? null;
+}
 
 // [centre x, centre y, size x, size y]
 export const WALLS = [
@@ -17,14 +21,14 @@ export const WALLS = [
 ];
 
 export const FURNITURE = [
-  { name: 'bed', box: [-3.25, 1.95, 1.4, 2.0], color: '#5a73b3' },
-  { name: 'wardrobe', box: [-0.6, 2.7, 1.0, 0.5], color: '#73513a' },
-  { name: 'counter', box: [-2.2, -2.65, 2.6, 0.6], color: '#c8c8ce' },
-  { name: 'table', box: [-2.0, -1.2, 0.9, 0.7], color: '#9a7350' },
-  { name: 'couch', box: [2.6, 2.55, 1.8, 0.8], color: '#4d8c73' },
-  { name: 'coffee table', box: [2.6, 1.3, 0.9, 0.5], color: '#80593a' },
-  { name: 'tv', box: [0.3, 0, 0.4, 1.4], color: '#34343a' },
-  { name: 'armchair', box: [1.2, -2.4, 0.8, 0.8], color: '#b35a4d' },
+  { name: 'bed', box: [-3.25, 1.95, 1.4, 2.0], color: '#c9d3e6', label: 'bed' },
+  { name: 'wardrobe', box: [-0.6, 2.7, 1.0, 0.5], color: '#d6c3ae' },
+  { name: 'counter', box: [-2.2, -2.65, 2.6, 0.6], color: '#dedcd6', label: 'counter' },
+  { name: 'table', box: [-2.0, -1.2, 0.9, 0.7], color: '#d8c2a4', label: 'table' },
+  { name: 'couch', box: [2.6, 2.55, 1.8, 0.8], color: '#c4d9c9', label: 'couch' },
+  { name: 'coffee table', box: [2.6, 1.3, 0.9, 0.5], color: '#d8c2a4' },
+  { name: 'tv', box: [0.3, 0, 0.4, 1.4], color: '#b9b5ad', label: 'tv' },
+  { name: 'armchair', box: [1.2, -2.4, 0.8, 0.8], color: '#e3bfb5' },
 ];
 
 export const PLANT = { x: 3.65, y: -2.65, r: 0.2 };

@@ -12,17 +12,17 @@ const CREEP_START = 0.28;
 const MAX_RETRIES = 3;
 
 export const STATE_LABELS = {
-  docked: 'Charging on the dock',
-  undocking: 'Leaving the dock',
+  docked: 'Charging',
+  undocking: 'Backing off the dock',
   exploring: 'Exploring',
-  patrolling: 'Wandering around',
-  going: 'Going where you clicked',
-  returning: 'Heading home',
+  patrolling: 'Wandering',
+  going: 'Heading where you pointed',
+  returning: 'Going home',
   aligning: 'Lining up with the dock',
   creeping: 'Docking',
-  backoff: 'Backing up to try again',
-  idle: 'Waiting',
-  stranded: 'Stuck, needs help',
+  backoff: 'Missed, backing up',
+  idle: 'Standing around',
+  stranded: 'Stuck, needs a hand',
 };
 
 export class Brain {

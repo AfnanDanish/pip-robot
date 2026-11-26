@@ -1,8 +1,9 @@
 import { clamp, gaussian, wrap } from './util.js';
 
 export const RADIUS = 0.105; // collision radius [m]
-export const RAYS = 180;
+export const RAYS = 360; // one beam per degree, like an LD06
 export const MAX_RANGE = 8.0;
+export const MAP_RANGE = 4.5;
 export const MIN_RANGE = 0.12;
 
 export class Robot {

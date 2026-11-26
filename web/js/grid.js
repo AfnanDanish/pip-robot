@@ -47,10 +47,12 @@ export class Grid {
     this.cls[i] = l > THRESHOLD ? OCC : l < -THRESHOLD ? FREE : UNKNOWN;
   }
 
+  // maxRange here is the mapping range, not the sensor's. Far beams are sparse and spread out, so
+  // anything past ~4.5 m paints a noisy starburst instead of floor. Better to wait until Pip is closer.
   integrate(scan, maxRange) {
     const [c0, r0] = this.cell(scan.x, scan.y);
     for (let i = 0; i < scan.ranges.length; i++) {
-      const hit = Number.isFinite(scan.ranges[i]);
+      const hit = Number.isFinite(scan.ranges[i]) && scan.ranges[i] < maxRange;
       const d = hit ? scan.ranges[i] : maxRange;
       const a = scan.th + scan.angles[i];
       const [c1, r1] = this.cell(scan.x + d * Math.cos(a), scan.y + d * Math.sin(a));
