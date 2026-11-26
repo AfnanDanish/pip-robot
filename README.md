@@ -11,8 +11,13 @@ though: the same ROS 2 nodes will run on the robot.
 
 **[Watch it run in your browser →](https://afnandanish.github.io/pip-robot/)**
 
+[![The browser demo: Pip's face, its status, and the controls](docs/demo.jpg)](https://afnandanish.github.io/pip-robot/)
+
 Things to try there: drop a box in front of it, click somewhere on its map to send it off, poke it,
-or put it to sleep. The numbered dots are developer commentary, and each one explains a decision.
+or put it to sleep. The numbered signs are developer commentary, and each one explains a decision.
+
+Everything is pixel art on purpose, including the eyes on the real robot: they're drawn at 60×60
+and blown up 4× on the 240×240 screens. Here's every mood:
 
 ![Pip's eyes, one for each mood](docs/eyes.png)
 

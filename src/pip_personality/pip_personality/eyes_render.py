@@ -12,6 +12,7 @@ import pygame
 from .eyes_params import EyeParams, lerp_params, target_for_mood
 
 DISPLAY = 240
+PIXEL = 4  # size of one "art pixel" on the real screen
 EYE_COLOR = (90, 225, 255)
 EYE_EDGE = (40, 140, 190)
 SPARKLE = (235, 252, 255)
@@ -67,6 +68,10 @@ class EyeRenderer:
             surf.fill((*BACKGROUND, 255))
             self._draw_eye(surf, side)
             surf.blit(self._mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+            # Pixel-art look: draw at full size, drop to 60x60, blow back up with nearest-neighbour
+            # (pygame's plain scale). Each eye pixel becomes a crisp 4x4 block on the 240px screen.
+            small = pygame.transform.scale(surf, (DISPLAY // PIXEL, DISPLAY // PIXEL))
+            surf = pygame.transform.scale(small, (DISPLAY, DISPLAY))
             pos = (x0 + i * (DISPLAY + gap), y0)
             pygame.draw.circle(screen, BEZEL, (pos[0] + DISPLAY // 2, pos[1] + DISPLAY // 2),
                                DISPLAY // 2 + 8)
