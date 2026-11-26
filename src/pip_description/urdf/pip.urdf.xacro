@@ -1,0 +1,248 @@
+<?xml version="1.0"?>
+<!--
+  Pip: a small differential-drive home robot.
+  Frames: base_footprint on the floor under the robot centre, base_link at the centre of the body box.
+  x forward, y left, z up (REP 103). Units: metres, kilograms.
+-->
+<robot name="pip" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Body -->
+  <xacro:property name="body_l" value="0.20"/>
+  <xacro:property name="body_w" value="0.16"/>
+  <xacro:property name="body_h" value="0.10"/>
+  <xacro:property name="body_z" value="0.08"/>
+  <xacro:property name="body_m" value="1.2"/>
+  <!-- Wheels -->
+  <xacro:property name="wheel_r" value="0.035"/>
+  <xacro:property name="wheel_w" value="0.025"/>
+  <xacro:property name="wheel_y" value="0.0975"/>
+  <xacro:property name="wheel_m" value="0.10"/>
+  <!-- Casters -->
+  <xacro:property name="caster_r" value="0.015"/>
+  <xacro:property name="caster_x" value="0.075"/>
+  <!-- Lidar scan plane height above the floor -->
+  <xacro:property name="lidar_z" value="0.155"/>
+
+  <xacro:macro name="box_inertia" params="m x y z">
+    <inertial>
+      <mass value="${m}"/>
+      <inertia ixx="${m*(y*y+z*z)/12}" ixy="0" ixz="0" iyy="${m*(x*x+z*z)/12}" iyz="0" izz="${m*(x*x+y*y)/12}"/>
+    </inertial>
+  </xacro:macro>
+
+  <material name="shell"><color rgba="0.95 0.62 0.18 1"/></material>
+  <material name="trim"><color rgba="0.20 0.20 0.24 1"/></material>
+  <material name="screen"><color rgba="0.02 0.02 0.03 1"/></material>
+  <material name="eye"><color rgba="0.35 0.88 1.00 1"/></material>
+  <material name="rubber"><color rgba="0.12 0.12 0.12 1"/></material>
+  <material name="metal"><color rgba="0.85 0.72 0.30 1"/></material>
+
+  <link name="base_footprint"/>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 ${body_z}"/>
+  </joint>
+
+  <link name="base_link">
+    <visual name="body">
+      <geometry><box size="${body_l} ${body_w} ${body_h}"/></geometry>
+      <material name="shell"/>
+    </visual>
+    <!-- Round face display bezel and the two eyes -->
+    <visual name="face">
+      <origin xyz="${body_l/2 + 0.002} 0 0.008"/>
+      <geometry><box size="0.004 0.13 0.065"/></geometry>
+      <material name="screen"/>
+    </visual>
+    <visual name="eye_left">
+      <origin xyz="${body_l/2 + 0.004} 0.03 0.012"/>
+      <geometry><box size="0.002 0.026 0.032"/></geometry>
+      <material name="eye"/>
+    </visual>
+    <visual name="eye_right">
+      <origin xyz="${body_l/2 + 0.004} -0.03 0.012"/>
+      <geometry><box size="0.002 0.026 0.032"/></geometry>
+      <material name="eye"/>
+    </visual>
+    <!-- Charging contacts on the front bumper -->
+    <visual name="contact_left">
+      <origin xyz="${body_l/2 + 0.002} 0.05 -0.035"/>
+      <geometry><box size="0.004 0.02 0.01"/></geometry>
+      <material name="metal"/>
+    </visual>
+    <visual name="contact_right">
+      <origin xyz="${body_l/2 + 0.002} -0.05 -0.035"/>
+      <geometry><box size="0.004 0.02 0.01"/></geometry>
+      <material name="metal"/>
+    </visual>
+    <!-- Lidar mast -->
+    <visual name="mast">
+      <origin xyz="0 0 ${body_h/2 + 0.005}"/>
+      <geometry><cylinder radius="0.02" length="0.01"/></geometry>
+      <material name="trim"/>
+    </visual>
+    <collision>
+      <geometry><box size="${body_l} ${body_w} ${body_h}"/></geometry>
+    </collision>
+    <xacro:box_inertia m="${body_m}" x="${body_l}" y="${body_w}" z="${body_h}"/>
+  </link>
+
+  <xacro:macro name="wheel" params="side y">
+    <link name="${side}_wheel_link">
+      <visual>
+        <origin rpy="${pi/2} 0 0"/>
+        <geometry><cylinder radius="${wheel_r}" length="${wheel_w}"/></geometry>
+        <material name="rubber"/>
+      </visual>
+      <collision>
+        <origin rpy="${pi/2} 0 0"/>
+        <geometry><cylinder radius="${wheel_r}" length="${wheel_w}"/></geometry>
+      </collision>
+      <inertial>
+        <origin rpy="${pi/2} 0 0"/>
+        <mass value="${wheel_m}"/>
+        <inertia ixx="${wheel_m*(3*wheel_r*wheel_r + wheel_w*wheel_w)/12}" ixy="0" ixz="0"
+                 iyy="${wheel_m*(3*wheel_r*wheel_r + wheel_w*wheel_w)/12}" iyz="0"
+                 izz="${wheel_m*wheel_r*wheel_r/2}"/>
+      </inertial>
+    </link>
+    <joint name="${side}_wheel_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="${side}_wheel_link"/>
+      <origin xyz="0 ${y} ${wheel_r - body_z}"/>
+      <axis xyz="0 1 0"/>
+    </joint>
+    <gazebo reference="${side}_wheel_link">
+      <mu1>1.0</mu1>
+      <mu2>1.0</mu2>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:wheel side="left" y="${wheel_y}"/>
+  <xacro:wheel side="right" y="${-wheel_y}"/>
+
+  <xacro:macro name="caster" params="name x">
+    <link name="${name}_caster_link">
+      <visual>
+        <geometry><sphere radius="${caster_r}"/></geometry>
+        <material name="trim"/>
+      </visual>
+      <collision>
+        <geometry><sphere radius="${caster_r}"/></geometry>
+      </collision>
+      <inertial>
+        <mass value="0.02"/>
+        <inertia ixx="${0.4*0.02*caster_r*caster_r}" ixy="0" ixz="0"
+                 iyy="${0.4*0.02*caster_r*caster_r}" iyz="0"
+                 izz="${0.4*0.02*caster_r*caster_r}"/>
+      </inertial>
+    </link>
+    <joint name="${name}_caster_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="${name}_caster_link"/>
+      <origin xyz="${x} 0 ${caster_r - body_z}"/>
+    </joint>
+    <gazebo reference="${name}_caster_link">
+      <mu1>0.0</mu1>
+      <mu2>0.0</mu2>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:caster name="front" x="${caster_x}"/>
+  <xacro:caster name="rear" x="${-caster_x}"/>
+
+  <!-- 360 degree lidar (LD06 / RPLIDAR-class) -->
+  <link name="lidar_link">
+    <visual>
+      <geometry><cylinder radius="0.035" length="0.03"/></geometry>
+      <material name="trim"/>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="0.035" length="0.03"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.08"/>
+      <inertia ixx="3e-5" ixy="0" ixz="0" iyy="3e-5" iyz="0" izz="5e-5"/>
+    </inertial>
+  </link>
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
+    <origin xyz="0 0 ${lidar_z - body_z}"/>
+  </joint>
+
+  <link name="imu_link"/>
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+  </joint>
+
+  <!-- Gazebo (Harmonic) plugins and sensors -->
+  <gazebo reference="lidar_link">
+    <sensor name="lidar" type="gpu_lidar">
+      <topic>scan</topic>
+      <gz_frame_id>lidar_link</gz_frame_id>
+      <update_rate>10</update_rate>
+      <always_on>1</always_on>
+      <visualize>false</visualize>
+      <lidar>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.12</min>
+          <max>8.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.008</stddev>
+        </noise>
+      </lidar>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="imu_link">
+    <sensor name="imu" type="imu">
+      <topic>imu</topic>
+      <gz_frame_id>imu_link</gz_frame_id>
+      <update_rate>50</update_rate>
+      <always_on>1</always_on>
+    </sensor>
+  </gazebo>
+
+  <gazebo>
+    <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+      <wheel_separation>${2*wheel_y}</wheel_separation>
+      <wheel_radius>${wheel_r}</wheel_radius>
+      <max_linear_acceleration>1.0</max_linear_acceleration>
+      <min_linear_acceleration>-1.0</min_linear_acceleration>
+      <max_angular_acceleration>4.0</max_angular_acceleration>
+      <min_angular_acceleration>-4.0</min_angular_acceleration>
+      <max_linear_velocity>0.4</max_linear_velocity>
+      <min_linear_velocity>-0.4</min_linear_velocity>
+      <max_angular_velocity>2.0</max_angular_velocity>
+      <min_angular_velocity>-2.0</min_angular_velocity>
+      <topic>cmd_vel</topic>
+      <odom_topic>odom</odom_topic>
+      <tf_topic>tf</tf_topic>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_footprint</child_frame_id>
+      <odom_publish_frequency>30</odom_publish_frequency>
+    </plugin>
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+      <topic>joint_states</topic>
+    </plugin>
+  </gazebo>
+
+</robot>

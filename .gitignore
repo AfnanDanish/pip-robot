@@ -1,0 +1,22 @@
+# colcon
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+
+# Maps and recordings produced at runtime
+maps/
+*.bag
+rosbag2_*/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
